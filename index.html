@@ -9,20 +9,18 @@
         body { text-align: center; padding: 40px 20px; background: #ffffff; color: #000000; }
         .box { background: #ffffff; padding: 30px; border: 2px solid #000000; display: inline-block; width: 100%; max-width: 500px; text-align: left; }
         
-        /* 標題樣式：字體大小與粗細完全一致 */
-        h2 { 
+        /* 標題樣式：強制兩行字體大小與粗細 100% 完全一致 */
+        .main-title { 
             text-align: center; 
-            font-size: 20px; 
-            font-weight: bold;
             margin-bottom: 20px; 
             border-bottom: 2px solid #000000; 
             padding-bottom: 12px; 
             line-height: 1.5; 
         }
-        .title-line { 
-            display: block; 
-            font-size: 20px; 
-            font-weight: bold; 
+        .main-title div {
+            font-size: 20px;
+            font-weight: 700;
+            color: #000000;
         }
 
         .notice-box { border: 1px solid #000000; padding: 15px; margin-bottom: 20px; font-size: 14px; line-height: 1.6; }
@@ -46,10 +44,10 @@
 <body>
 
 <div class="box">
-    <h2>
-        <span class="title-line">崑山科技大學視覺傳達設計系</span>
-        <span class="title-line">116畢業製作9/24共評順序抽籤</span>
-    </h2>
+    <div class="main-title">
+        <div>崑山科技大學視覺傳達設計系</div>
+        <div>116畢業製作9/24共評順序抽籤</div>
+    </div>
     
     <div class="notice-box">
         <p>【抽籤注意事項與規則】</p>
@@ -152,4 +150,5 @@
 
 </body>
 </html>
+
 
