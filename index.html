@@ -52,8 +52,8 @@
 </div>
 
 <script>
-    // 請將雙引號內的字串替換為第一步獲取的 Google 網頁應用程式網址
-    const API_URL = "https://script.google.com/macros/s/AKfycbw_oS9xC60Zz-CwUXfFWbO9IZpIJ-_jTuSeUzMMyg1c7MScPmIjurhlGzpiyIgRGMfYNA/exec";
+    // 請將雙引號內的字串替換為你在第二步複製的 Google 網址
+    const API_URL = "YOUR_GAS_WEB_APP_URL";
 
     function draw() {
         const nameInput = document.getElementById('groupName');
@@ -68,7 +68,6 @@
         resDiv.innerHTML = '抽籤進行中，請稍候...';
         document.getElementById('allResults').style.display = 'none';
 
-        // 採用 JSONP 機制，100% 防跨網域連線失敗
         const script = document.createElement('script');
         const callbackName = 'cb_' + Date.now();
 
@@ -88,7 +87,7 @@
         script.src = `${API_URL}?action=draw&name=${encodeURIComponent(name)}&callback=${callbackName}`;
         script.onerror = function() {
             btn.disabled = false;
-            resDiv.innerHTML = '⚠️ 連線失敗！請確認 Google 部署權限已設定為「所有人」。';
+            resDiv.innerHTML = '⚠️ 連線失敗！請確認權限已設為「所有人」且使用 @gmail.com 帳號建立。';
         };
         document.body.appendChild(script);
     }
@@ -126,7 +125,7 @@
 
         script.src = `${API_URL}?action=getResults&callback=${callbackName}`;
         script.onerror = function() {
-            resDiv.innerHTML = '⚠️ 無法取得最新紀錄，請檢查 Google 部署權限。';
+            resDiv.innerHTML = '⚠️ 無法取得最新紀錄，請檢查部署權限。';
         };
         document.body.appendChild(script);
     }
@@ -134,6 +133,7 @@
 
 </body>
 </html>
+
 
 
 
