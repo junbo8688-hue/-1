@@ -52,10 +52,10 @@
 </div>
 
 <script>
-    // 請將下方字串替換為第一步產生的 Google Apps Script URL
-    const API_URL = "https://script.google.com/a/macros/g.ksu.edu.tw/s/AKfycbzWfSzo3CeolgXBlIh5JHOl8-KAdQB1lRHDP9X0Tc2HsRDiBR3BQezl_ZgmOP2o5uzyUA/exec";
+    // 請將雙引號內的字串替換為第一步獲取的 Google 網頁應用程式網址
+    const API_URL = "https://script.google.com/macros/s/AKfycbw_oS9xC60Zz-CwUXfFWbO9IZpIJ-_jTuSeUzMMyg1c7MScPmIjurhlGzpiyIgRGMfYNA/exec";
 
-    async function draw() {
+    function draw() {
         const nameInput = document.getElementById('groupName');
         const name = nameInput.value.trim();
         const resDiv = document.getElementById('result');
@@ -68,12 +68,14 @@
         resDiv.innerHTML = '抽籤進行中，請稍候...';
         document.getElementById('allResults').style.display = 'none';
 
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'draw', name: name })
-            });
-            const res = await response.json();
+        // 採用 JSONP 機制，100% 防跨網域連線失敗
+        const script = document.createElement('script');
+        const callbackName = 'cb_' + Date.now();
+
+        window[callbackName] = function(res) {
+            delete window[callbackName];
+            if (document.body.contains(script)) document.body.removeChild(script);
+            btn.disabled = false;
 
             if (res.status === 'success') {
                 resDiv.innerHTML = `【${res.name}】抽取成功！<br>提報順序為：<span style="font-size: 32px; font-weight: bold;">${res.number}</span>`;
@@ -81,25 +83,28 @@
             } else {
                 resDiv.innerHTML = `⚠️ ${res.message}`;
             }
-        } catch (err) {
-            resDiv.innerHTML = '⚠️ 連線失敗，請檢查網路連線或稍後再試。';
-        } finally {
+        };
+
+        script.src = `${API_URL}?action=draw&name=${encodeURIComponent(name)}&callback=${callbackName}`;
+        script.onerror = function() {
             btn.disabled = false;
-        }
+            resDiv.innerHTML = '⚠️ 連線失敗！請確認 Google 部署權限已設定為「所有人」。';
+        };
+        document.body.appendChild(script);
     }
 
-    async function showResults() {
+    function showResults() {
         const resDiv = document.getElementById('allResults');
         document.getElementById('result').style.display = 'none';
         resDiv.style.display = 'block';
         resDiv.innerHTML = '資料載入中...';
 
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'getResults' })
-            });
-            const res = await response.json();
+        const script = document.createElement('script');
+        const callbackName = 'cb_' + Date.now();
+
+        window[callbackName] = function(res) {
+            delete window[callbackName];
+            if (document.body.contains(script)) document.body.removeChild(script);
 
             if (res.status === 'success') {
                 const entries = Object.entries(res.data);
@@ -117,9 +122,13 @@
                 html += '</ul>';
                 resDiv.innerHTML = html;
             }
-        } catch (err) {
-            resDiv.innerHTML = '⚠️ 無法取得最新紀錄，請稍後再試。';
-        }
+        };
+
+        script.src = `${API_URL}?action=getResults&callback=${callbackName}`;
+        script.onerror = function() {
+            resDiv.innerHTML = '⚠️ 無法取得最新紀錄，請檢查 Google 部署權限。';
+        };
+        document.body.appendChild(script);
     }
 </script>
 
