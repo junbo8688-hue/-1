@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>組別抽籤系統</title>
+  <title>116畢業製作9/24提報順序抽籤</title>
   <style>
     * {
       box-sizing: border-box;
@@ -26,12 +26,27 @@
       background: #ffffff;
     }
     h1 {
-      font-size: 24px;
+      font-size: 22px;
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       border-bottom: 2px solid #000000;
       padding-bottom: 10px;
-      letter-spacing: 2px;
+      letter-spacing: 1px;
+    }
+    .notice-box {
+      border: 1px solid #000000;
+      padding: 12px 15px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      line-height: 1.6;
+      background-color: #fcfcfc;
+    }
+    .notice-box p {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .notice-box ul {
+      padding-left: 18px;
     }
     .status-info {
       font-size: 14px;
@@ -135,7 +150,16 @@
 <body>
 
 <div class="container">
-  <h1>組別抽籤系統</h1>
+  <h1>116畢業製作9/24提報順序抽籤</h1>
+
+  <div class="notice-box">
+    <p>【抽籤注意事項與規則】</p>
+    <ul>
+      <li>請輸入正確的組別名稱進行抽籤。</li>
+      <li>每組僅限抽籤一次，系統紀錄後無法重複抽取。</li>
+      <li>嚴禁冒用、盜用其他組別名稱進行抽籤，違者將取消該次抽籤結果並依規定處理。</li>
+    </ul>
+  </div>
 
   <div class="status-info">
     已抽籤組數：<span id="drawn-count">0</span> / 19
@@ -143,12 +167,12 @@
 
   <div class="input-section" id="draw-form">
     <label for="group-name">請輸入組別名稱：</label>
-    <input type="text" id="group-name" placeholder="輸入名稱 (例如: 形象組)" autocomplete="off">
-    <button id="draw-btn" onclick="startDraw()">進入階段二：抽取號碼</button>
+    <input type="text" id="group-name" placeholder="請輸入組別名稱" autocomplete="off">
+    <button id="draw-btn" onclick="startDraw()">抽取提報順序</button>
   </div>
 
   <div class="result-display" id="result-box">
-    <p><span id="res-group-name"></span> 抽到的號碼為：</p>
+    <p><span id="res-group-name"></span> 的提報順序為：</p>
     <div class="result-number" id="res-number">0</div>
     <button onclick="confirmResult()">確認並完成</button>
   </div>
@@ -158,12 +182,12 @@
     <table>
       <thead>
         <tr>
-          <th>序號 / 號碼</th>
+          <th>提報順序</th>
           <th>組別名稱</th>
         </tr>
       </thead>
       <tbody id="result-table-body">
-        <!-- 抽籤紀錄將顯示於此 -->
+        <!-- 抽籤紀錄顯示處 -->
       </tbody>
     </table>
   </div>
@@ -176,7 +200,6 @@
 <script>
   const TOTAL_NUMBERS = 19;
 
-  // 初始化儲存空間
   function getStoredData() {
     const history = JSON.parse(localStorage.getItem('draw_history')) || [];
     const available = JSON.parse(localStorage.getItem('draw_available')) || Array.from({length: TOTAL_NUMBERS}, (_, i) => i + 1);
@@ -199,7 +222,6 @@
 
     drawnCountEl.textContent = history.length;
 
-    // 依號碼排序顯示
     const sortedHistory = [...history].sort((a, b) => a.number - b.number);
     tableBody.innerHTML = '';
 
@@ -216,7 +238,7 @@
     } else {
       groupInput.disabled = false;
       drawBtn.disabled = false;
-      groupInput.placeholder = "輸入名稱 (例如: 形象組)";
+      groupInput.placeholder = "請輸入組別名稱";
     }
   }
 
@@ -231,35 +253,29 @@
 
     let { history, available } = getStoredData();
 
-    // 檢查組名是否重複
     if (history.some(item => item.groupName === groupName)) {
-      alert('該組別名稱已經抽過籤了！');
+      alert('該組別名稱已經抽過籤了！請勿重複抽籤。');
       return;
     }
 
     let pickedNumber = null;
 
-    // 判斷是否為形象組
     if (groupName === '形象組') {
       if (!available.includes(1)) {
-        alert('號碼 1 已經被抽取，無法指派給形象組！');
+        alert('號碼 1 已經被抽取，無法指派！');
         return;
       }
       pickedNumber = 1;
     } else {
-      // 若非形象組，但號碼1還在且尚未給形象組，其他組別若隨機抽到1需要保護嗎？
-      // 此處預設普通組別隨機從當前剩餘號碼中抽取
       const randomIndex = Math.floor(Math.random() * available.length);
       pickedNumber = available[randomIndex];
     }
 
-    // 暫存抽籤結果
     currentPendingDraw = {
       groupName: groupName,
       number: pickedNumber
     };
 
-    // 顯示抽籤結果區域
     document.getElementById('res-group-name').textContent = groupName;
     document.getElementById('res-number').textContent = pickedNumber;
     document.getElementById('result-box').style.display = 'block';
@@ -276,7 +292,6 @@
 
     saveData(history, available);
 
-    // 清空與重置介面
     currentPendingDraw = null;
     document.getElementById('group-name').value = '';
     document.getElementById('result-box').style.display = 'none';
@@ -308,12 +323,12 @@
     });
   }
 
-  // 初次載入渲染
   render();
 </script>
 
 </body>
 </html>
+
 
 
 
