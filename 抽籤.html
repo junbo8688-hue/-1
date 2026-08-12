@@ -89,7 +89,7 @@
 
 <div class="box">
     <h2>組別抽籤系統 (1-19號)</h2>
-    <input type="text" id="groupName" placeholder="請輸入組別名稱 (如：第1組、形象組)">
+    <input type="text" id="groupName" placeholder="請輸入組別名稱">
     <br>
     <button onclick="draw()">開始抽籤</button>
     <button class="btn-check" onclick="showResults()">查看所有結果</button>
@@ -150,7 +150,6 @@
                 }
                 num = 1;
             } else {
-                // 一般組別：從剩餘號碼隨機抽（若 1 號尚未被形象組抽走，且一般組抽出 1 號，則允許抽）
                 num = available[Math.floor(Math.random() * available.length)];
             }
             
@@ -194,5 +193,6 @@
 
 </body>
 </html>
+
 
 
