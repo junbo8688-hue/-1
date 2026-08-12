@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>116畢業製作9/24提報順序抽籤</title>
+    <title>崑山科技大學視覺傳達設計系 116畢業製作9/24共評順序抽籤</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
         body { text-align: center; padding: 40px 20px; background: #ffffff; color: #000000; }
         .box { background: #ffffff; padding: 30px; border: 2px solid #000000; display: inline-block; width: 100%; max-width: 500px; text-align: left; }
-        h2 { text-align: center; font-size: 22px; margin-bottom: 20px; border-bottom: 2px solid #000000; padding-bottom: 10px; }
+        h2 { text-align: center; font-size: 20px; margin-bottom: 20px; border-bottom: 2px solid #000000; padding-bottom: 12px; line-height: 1.5; }
+        .sub-title { font-size: 16px; display: block; font-weight: normal; margin-bottom: 4px; }
         .notice-box { border: 1px solid #000000; padding: 15px; margin-bottom: 20px; font-size: 14px; line-height: 1.6; }
         .notice-box p { font-weight: bold; margin-bottom: 8px; font-size: 14px; }
         .notice-box ul { padding-left: 20px; font-size: 14px; }
@@ -30,7 +31,10 @@
 <body>
 
 <div class="box">
-    <h2>116畢業製作9/24提報順序抽籤</h2>
+    <h2>
+        <span class="sub-title">崑山科技大學視覺傳達設計系</span>
+        116畢業製作9/24共評順序抽籤
+    </h2>
     
     <div class="notice-box">
         <p>【抽籤注意事項與規則】</p>
@@ -44,7 +48,7 @@
     <label for="groupName">請輸入組別名稱：</label>
     <input type="text" id="groupName" placeholder="請輸入組別名稱" autocomplete="off">
     
-    <button id="drawBtn" onclick="draw()">抽取提報順序</button>
+    <button id="drawBtn" onclick="draw()">抽取共評順序</button>
     <button class="btn-check" onclick="showResults()">查看所有結果</button>
     
     <div id="result"></div>
@@ -52,7 +56,7 @@
 </div>
 
 <script>
-    // 請將雙引號內的字串替換為你在第二步複製的 Google 網址
+    // 請記得將下方雙引號內的字串替換為你剛才測試成功的 Google 部署網址喔！
     const API_URL = "https://script.google.com/macros/s/AKfycbzk21p_B_rZWuUWOFOYW_SV3q_iusimdr1Nc5BewOrv9XdEDNG0vahd9djdgN3qtnXq0Q/exec";
 
     function draw() {
@@ -77,7 +81,7 @@
             btn.disabled = false;
 
             if (res.status === 'success') {
-                resDiv.innerHTML = `【${res.name}】抽取成功！<br>提報順序為：<span style="font-size: 32px; font-weight: bold;">${res.number}</span>`;
+                resDiv.innerHTML = `【${res.name}】抽取成功！<br>共評順序為：<span style="font-size: 32px; font-weight: bold;">${res.number}</span>`;
                 nameInput.value = '';
             } else {
                 resDiv.innerHTML = `⚠️ ${res.message}`;
@@ -87,7 +91,7 @@
         script.src = `${API_URL}?action=draw&name=${encodeURIComponent(name)}&callback=${callbackName}`;
         script.onerror = function() {
             btn.disabled = false;
-            resDiv.innerHTML = '⚠️ 連線失敗！請確認權限已設為「所有人」且使用 @gmail.com 帳號建立。';
+            resDiv.innerHTML = '⚠️ 連線失敗！請檢查網路連線或部署設定。';
         };
         document.body.appendChild(script);
     }
@@ -116,7 +120,7 @@
 
                 let html = '<h3>已完成抽籤結果列表：</h3><ul>';
                 for (let [gName, num] of entries) {
-                    html += `<li>提報順序 <b>${num}</b> ➔ 【${gName}】</li>`;
+                    html += `<li>共評順序 <b>${num}</b> ➔ 【${gName}】</li>`;
                 }
                 html += '</ul>';
                 resDiv.innerHTML = html;
@@ -125,7 +129,7 @@
 
         script.src = `${API_URL}?action=getResults&callback=${callbackName}`;
         script.onerror = function() {
-            resDiv.innerHTML = '⚠️ 無法取得最新紀錄，請檢查部署權限。';
+            resDiv.innerHTML = '⚠️ 無法取得最新紀錄，請稍後再試。';
         };
         document.body.appendChild(script);
     }
@@ -133,10 +137,3 @@
 
 </body>
 </html>
-
-
-
-
-
-
-
