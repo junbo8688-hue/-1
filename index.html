@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>116畢業製作9/24提報順序抽籤</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { text-align: center; padding: 40px 20px; background: #ffffff; color: #000000; }
+        .box { background: #ffffff; padding: 30px; border: 2px solid #000000; display: inline-block; width: 100%; max-width: 500px; text-align: left; }
+        h2 { text-align: center; font-size: 22px; margin-bottom: 20px; border-bottom: 2px solid #000000; padding-bottom: 10px; }
+        .notice-box { border: 1px solid #000000; padding: 15px; margin-bottom: 20px; font-size: 14px; line-height: 1.6; }
+        .notice-box p { font-weight: bold; margin-bottom: 8px; font-size: 14px; }
+        .notice-box ul { padding-left: 20px; font-size: 14px; }
+        .notice-box li { font-size: 14px; list-style: disc; }
+        label { font-weight: bold; display: block; margin-bottom: 8px; font-size: 14px; }
+        input { font-size: 16px; padding: 10px; margin-bottom: 15px; border: 1px solid #000000; width: 100%; outline: none; }
+        button { font-size: 16px; padding: 12px; width: 100%; background: #000000; color: #ffffff; border: 1px solid #000000; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+        button:hover { background: #ffffff; color: #000000; }
+        button:disabled { background: #cccccc; border-color: #cccccc; cursor: not-allowed; }
+        .btn-check { background: #ffffff; color: #000000; }
+        .btn-check:hover { background: #000000; color: #ffffff; }
+        #result { font-size: 18px; font-weight: bold; margin-top: 20px; text-align: center; padding: 15px; border: 1px solid #000000; display: none; }
+        #allResults { margin-top: 20px; text-align: left; border: 1px solid #000000; padding: 15px; display: none; }
+        #allResults h3 { font-size: 16px; border-bottom: 1px solid #000000; padding-bottom: 5px; margin-bottom: 10px; }
+        ul { list-style: none; }
+        li { padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>116畢業製作9/24提報順序抽籤</h2>
+    
+    <div class="notice-box">
+        <p>【抽籤注意事項與規則】</p>
+        <ul>
+            <li>請輸入正確的組別名稱進行抽籤。</li>
+            <li>每組僅限抽籤一次，系統紀錄後無法重複抽取。</li>
+            <li>嚴禁冒用、盜用其他組別名稱進行抽籤，違者將取消該次抽籤結果並依規定處理。</li>
+        </ul>
+    </div>
+
+    <label for="groupName">請輸入組別名稱：</label>
+    <input type="text" id="groupName" placeholder="請輸入組別名稱" autocomplete="off">
+    
+    <button id="drawBtn" onclick="draw()">抽取提報順序</button>
+    <button class="btn-check" onclick="showResults()">查看所有結果</button>
+    
+    <div id="result"></div>
+    <div id="allResults"></div>
+</div>
+
+<script>
+    // 請將下方字串替換為第一步產生的 Google Apps Script URL
+    const API_URL = "https://script.google.com/a/macros/g.ksu.edu.tw/s/AKfycbzWfSzo3CeolgXBlIh5JHOl8-KAdQB1lRHDP9X0Tc2HsRDiBR3BQezl_ZgmOP2o5uzyUA/exec";
+
+    async function draw() {
+        const nameInput = document.getElementById('groupName');
+        const name = nameInput.value.trim();
+        const resDiv = document.getElementById('result');
+        const btn = document.getElementById('drawBtn');
+
+        if (!name) { alert('請先輸入組別名稱！'); return; }
+
+        btn.disabled = true;
+        resDiv.style.display = 'block';
+        resDiv.innerHTML = '抽籤進行中，請稍候...';
+        document.getElementById('allResults').style.display = 'none';
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'draw', name: name })
+            });
+            const res = await response.json();
+
+            if (res.status === 'success') {
+                resDiv.innerHTML = `【${res.name}】抽取成功！<br>提報順序為：<span style="font-size: 32px; font-weight: bold;">${res.number}</span>`;
+                nameInput.value = '';
+            } else {
+                resDiv.innerHTML = `⚠️ ${res.message}`;
+            }
+        } catch (err) {
+            resDiv.innerHTML = '⚠️ 連線失敗，請檢查網路連線或稍後再試。';
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    async function showResults() {
+        const resDiv = document.getElementById('allResults');
+        document.getElementById('result').style.display = 'none';
+        resDiv.style.display = 'block';
+        resDiv.innerHTML = '資料載入中...';
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'getResults' })
+            });
+            const res = await response.json();
+
+            if (res.status === 'success') {
+                const entries = Object.entries(res.data);
+                if (entries.length === 0) {
+                    resDiv.innerHTML = '<p style="text-align:center;">目前尚無任何抽籤紀錄！</p>';
+                    return;
+                }
+
+                entries.sort((a, b) => Number(a[1]) - Number(b[1]));
+
+                let html = '<h3>已完成抽籤結果列表：</h3><ul>';
+                for (let [gName, num] of entries) {
+                    html += `<li>提報順序 <b>${num}</b> ➔ 【${gName}】</li>`;
+                }
+                html += '</ul>';
+                resDiv.innerHTML = html;
+            }
+        } catch (err) {
+            resDiv.innerHTML = '⚠️ 無法取得最新紀錄，請稍後再試。';
+        }
+    }
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
