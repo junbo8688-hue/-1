@@ -20,6 +20,7 @@
             display: inline-block; 
             width: 85%; 
             max-width: 400px; 
+            box-sizing: border-box;
         }
         h2 {
             font-size: 22px;
@@ -62,6 +63,7 @@
             font-weight: bold; 
             margin-top: 20px; 
             color: #000000; 
+            line-height: 1.5;
         }
         #allResults { 
             margin-top: 20px; 
@@ -78,10 +80,12 @@
         }
         li { 
             padding: 6px 0;
-            border-bottom: 1px #e0e0e0;
+            border-bottom: 1px solid #f0f0f0;
             font-size: 16px; 
         }
     </style>
+
+    <!-- 引入 Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
@@ -99,7 +103,7 @@
 </div>
 
 <script>
-    // 請替換為您的 Firebase 設定
+    // ⚠️ 請填入您的 Firebase 專屬金鑰設定
     const firebaseConfig = {
         apiKey: "YOUR_API_KEY",
         authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -110,6 +114,7 @@
         appId: "1:123456789:web:abcdef"
     };
     
+    // 初始化 Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const allNumbers = Array.from({length: 19}, (_, i) => i + 1);
@@ -127,6 +132,7 @@
         db.ref('draw_history').once('value', snapshot => {
             let history = snapshot.val() || {};
 
+            // 防呆：檢查是否抽過
             if (history[name]) {
                 resDiv.innerHTML = `【${name}】先前已抽過，號碼為：${history[name]}`;
                 return;
@@ -136,13 +142,13 @@
             let available = allNumbers.filter(num => !used.includes(num));
 
             if (available.length === 0) {
-                resDiv.innerHTML = '所有 1-19 號皆已被抽完';
+                resDiv.innerHTML = '所有 1-19 號階已被抽完';
                 return;
             }
 
             let num;
 
-            // 特殊規則：若名稱包含「形象組」，強制指定為 1 號
+            // 特殊規則：名稱包含「形象組」即指定 1 號
             if (name.includes("形象組")) {
                 if (used.includes(1)) {
                     resDiv.innerHTML = `無法抽籤：1號已被其它組別抽走`;
@@ -153,12 +159,12 @@
                 num = available[Math.floor(Math.random() * available.length)];
             }
             
-            // 寫入雲端資料庫
+            // 寫入 Firebase 資料庫
             db.ref('draw_history/' + name).set(num, (error) => {
                 if (error) {
                     alert("儲存失敗：" + error.message);
                 } else {
-                    resDiv.innerHTML = `【${name}】抽到的號碼是：【${num}】<br><small>剩餘號碼數：${available.length - 1} 個</small>`;
+                    resDiv.innerHTML = `【${name}】抽到的號碼是：【${num}】<br><small style="font-weight:normal;">剩餘號碼數：${available.length - 1} 個</small>`;
                 }
             });
         });
@@ -178,9 +184,10 @@
                 return;
             }
 
+            // 依據抽出的號碼排序
             entries.sort((a, b) => a[1] - b[1]);
 
-            let html = '<h3 style="font-size:16px; margin-top:0;">所有抽籤結果：</h3><ul>';
+            let html = '<h3 style="font-size:16px; margin-top:0; border-bottom:1px solid #000; padding-bottom:5px;">所有抽籤結果：</h3><ul>';
             for (let [name, num] of entries) {
                 html += `<li>號碼 ${num} 號 ➔ 【${name}】</li>`;
             }
@@ -193,5 +200,6 @@
 
 </body>
 </html>
+
 
 
