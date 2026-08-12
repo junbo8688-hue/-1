@@ -1,167 +1,319 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>組別抽籤系統</title>
-    <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            text-align: center; 
-            padding-top: 50px; 
-            background: #ffffff; 
-            color: #000000;
-        }
-        .box { 
-            background: #ffffff; 
-            padding: 30px; 
-            border: 1px solid #000000; 
-            display: inline-block; 
-            width: 85%; 
-            max-width: 400px; 
-            box-sizing: border-box;
-        }
-        h2 { font-size: 22px; margin-bottom: 20px; }
-        input, button { 
-            font-size: 16px; 
-            padding: 10px; 
-            margin: 8px 0; 
-            box-sizing: border-box;
-            width: 100%;
-        }
-        input { border: 1px solid #000000; background: #ffffff; color: #000000; }
-        button { 
-            background: #000000; 
-            color: #ffffff; 
-            border: 1px solid #000000; 
-            cursor: pointer; 
-        }
-        button:hover { background: #333333; }
-        .btn-check { background: #ffffff; color: #000000; }
-        .btn-check:hover { background: #f0f0f0; }
-        #result { font-size: 18px; font-weight: bold; margin-top: 20px; line-height: 1.5; }
-        #allResults { 
-            margin-top: 20px; 
-            text-align: left; 
-            border: 1px solid #000000;
-            padding: 15px; 
-            display: none; 
-        }
-        ul { list-style: none; padding-left: 0; margin: 0; }
-        li { padding: 6px 0; border-bottom: 1px solid #f0f0f0; font-size: 16px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>組別抽籤系統</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    body {
+      background-color: #ffffff;
+      color: #000000;
+      display: flex;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .container {
+      width: 100%;
+      max-width: 600px;
+      border: 2px solid #000000;
+      padding: 30px;
+      background: #ffffff;
+    }
+    h1 {
+      font-size: 24px;
+      text-align: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #000000;
+      padding-bottom: 10px;
+      letter-spacing: 2px;
+    }
+    .status-info {
+      font-size: 14px;
+      margin-bottom: 20px;
+      text-align: right;
+    }
+    .input-section {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    label {
+      font-weight: bold;
+      font-size: 16px;
+    }
+    input[type="text"] {
+      padding: 12px;
+      border: 1px solid #000000;
+      font-size: 16px;
+      outline: none;
+      background: #ffffff;
+      color: #000000;
+    }
+    input[type="text"]:focus {
+      background: #f0f0f0;
+    }
+    button {
+      padding: 12px 20px;
+      background-color: #000000;
+      color: #ffffff;
+      border: 1px solid #000000;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    button:hover {
+      background-color: #ffffff;
+      color: #000000;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      border-color: #cccccc;
+      color: #666666;
+      cursor: not-allowed;
+    }
+    .result-display {
+      display: none;
+      border: 1px solid #000000;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 30px;
+      background: #fafafa;
+    }
+    .result-number {
+      font-size: 48px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    .list-section {
+      margin-top: 20px;
+    }
+    .list-section h2 {
+      font-size: 18px;
+      border-bottom: 1px solid #000000;
+      padding-bottom: 5px;
+      margin-bottom: 15px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    th, td {
+      border: 1px solid #000000;
+      padding: 10px;
+      font-size: 14px;
+    }
+    th {
+      background-color: #000000;
+      color: #ffffff;
+    }
+    .reset-btn-container {
+      margin-top: 30px;
+      text-align: right;
+    }
+    .btn-reset {
+      background-color: #ffffff;
+      color: #000000;
+      border: 1px solid #000000;
+      font-size: 12px;
+      padding: 6px 12px;
+    }
+    .btn-reset:hover {
+      background-color: #000000;
+      color: #ffffff;
+    }
+  </style>
 </head>
 <body>
 
-<div class="box">
-    <h2>組別抽籤系統 (1-19號)</h2>
-    <input type="text" id="groupName" placeholder="請輸入組別名稱">
-    <br>
-    <button onclick="draw()">開始抽籤</button>
-    <button class="btn-check" onclick="showResults()">查看所有結果</button>
-    
-    <div id="result"></div>
-    <div id="allResults"></div>
+<div class="container">
+  <h1>組別抽籤系統</h1>
+
+  <div class="status-info">
+    已抽籤組數：<span id="drawn-count">0</span> / 19
+  </div>
+
+  <div class="input-section" id="draw-form">
+    <label for="group-name">請輸入組別名稱：</label>
+    <input type="text" id="group-name" placeholder="輸入名稱 (例如: 形象組)" autocomplete="off">
+    <button id="draw-btn" onclick="startDraw()">進入階段二：抽取號碼</button>
+  </div>
+
+  <div class="result-display" id="result-box">
+    <p><span id="res-group-name"></span> 抽到的號碼為：</p>
+    <div class="result-number" id="res-number">0</div>
+    <button onclick="confirmResult()">確認並完成</button>
+  </div>
+
+  <div class="list-section">
+    <h2>已完成抽籤結果列表</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>序號 / 號碼</th>
+          <th>組別名稱</th>
+        </tr>
+      </thead>
+      <tbody id="result-table-body">
+        <!-- 抽籤紀錄將顯示於此 -->
+      </tbody>
+    </table>
+  </div>
+
+  <div class="reset-btn-container">
+    <button class="btn-reset" onclick="resetAll()">重置全部資料</button>
+  </div>
 </div>
 
 <script>
-    const allNumbers = Array.from({length: 19}, (_, i) => i + 1);
+  const TOTAL_NUMBERS = 19;
 
-    // 取得歷史紀錄
-    function getHistory() {
-        try {
-            return JSON.parse(localStorage.getItem('draw_history_data') || '{}');
-        } catch (e) {
-            return {};
-        }
+  // 初始化儲存空間
+  function getStoredData() {
+    const history = JSON.parse(localStorage.getItem('draw_history')) || [];
+    const available = JSON.parse(localStorage.getItem('draw_available')) || Array.from({length: TOTAL_NUMBERS}, (_, i) => i + 1);
+    return { history, available };
+  }
+
+  function saveData(history, available) {
+    localStorage.setItem('draw_history', JSON.stringify(history));
+    localStorage.setItem('draw_available', JSON.stringify(available));
+  }
+
+  let currentPendingDraw = null;
+
+  function render() {
+    const { history } = getStoredData();
+    const tableBody = document.getElementById('result-table-body');
+    const drawnCountEl = document.getElementById('drawn-count');
+    const groupInput = document.getElementById('group-name');
+    const drawBtn = document.getElementById('draw-btn');
+
+    drawnCountEl.textContent = history.length;
+
+    // 依號碼排序顯示
+    const sortedHistory = [...history].sort((a, b) => a.number - b.number);
+    tableBody.innerHTML = '';
+
+    sortedHistory.forEach(item => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${item.number}</td><td>${escapeHtml(item.groupName)}</td>`;
+      tableBody.appendChild(tr);
+    });
+
+    if (history.length >= TOTAL_NUMBERS) {
+      groupInput.disabled = true;
+      drawBtn.disabled = true;
+      groupInput.placeholder = "已達到最高 19 組上限";
+    } else {
+      groupInput.disabled = false;
+      drawBtn.disabled = false;
+      groupInput.placeholder = "輸入名稱 (例如: 形象組)";
+    }
+  }
+
+  function startDraw() {
+    const groupInput = document.getElementById('group-name');
+    const groupName = groupInput.value.trim();
+
+    if (!groupName) {
+      alert('請先輸入組別名稱！');
+      return;
     }
 
-    // 開始抽籤
-    function draw() {
-        let nameInput = document.getElementById('groupName');
-        let name = nameInput.value.trim();
-        let resDiv = document.getElementById('result');
-        document.getElementById('allResults').style.display = 'none';
+    let { history, available } = getStoredData();
 
-        if (!name) { 
-            alert('請輸入組別名稱！'); 
-            return; 
-        }
-
-        let history = getHistory();
-
-        // 檢查是否已經抽過
-        if (history[name]) {
-            resDiv.innerHTML = `【${name}】先前已抽過，號碼為：${history[name]} 號`;
-            return;
-        }
-
-        let used = Object.values(history);
-        let available = allNumbers.filter(num => !used.includes(num));
-
-        if (available.length === 0) {
-            resDiv.innerHTML = '所有 1-19 號皆已被抽完';
-            return;
-        }
-
-        let num;
-
-        // 規則：名稱包含「形象組」，強制指定為 1 號
-        if (name.includes("形象組")) {
-            if (used.includes(1)) {
-                resDiv.innerHTML = `無法抽籤：1 號已被其它組別抽走`;
-                return;
-            }
-            num = 1;
-        } else {
-            // 一般組別：從剩餘未被抽走（且非已被占用）的號碼中隨機抽取
-            // 若 1 號尚未被抽走，優先保留給形象組（一般組從 2~19 中選；若無形象組需求亦可抽）
-            let nonOneAvailable = available.filter(n => n !== 1);
-            if (nonOneAvailable.length > 0) {
-                num = nonOneAvailable[Math.floor(Math.random() * nonOneAvailable.length)];
-            } else {
-                num = available[Math.floor(Math.random() * available.length)];
-            }
-        }
-        
-        // 儲存紀錄
-        history[name] = num;
-        localStorage.setItem('draw_history_data', JSON.stringify(history));
-
-        // 顯示結果
-        resDiv.innerHTML = `【${name}】抽到的號碼是：【${num} 號】<br><small style="font-weight:normal;">剩餘號碼數：${19 - Object.keys(history).length} 個</small>`;
-        
-        // 清空輸入框
-        nameInput.value = '';
+    // 檢查組名是否重複
+    if (history.some(item => item.groupName === groupName)) {
+      alert('該組別名稱已經抽過籤了！');
+      return;
     }
 
-    // 查看所有結果
-    function showResults() {
-        let resDiv = document.getElementById('allResults');
-        document.getElementById('result').innerHTML = '';
-        let history = getHistory();
-        let entries = Object.entries(history);
-        resDiv.style.display = 'block';
+    let pickedNumber = null;
 
-        if (entries.length === 0) {
-            resDiv.innerHTML = '<p style="text-align:center; margin:0;">目前尚無任何抽籤紀錄</p>';
-            return;
-        }
-
-        // 依據號碼由小到大排序
-        entries.sort((a, b) => a[1] - b[1]);
-
-        let html = '<h3 style="font-size:16px; margin-top:0; border-bottom:1px solid #000; padding-bottom:5px; text-align:center;">所有抽籤結果</h3><ul>';
-        for (let [name, num] of entries) {
-            html += `<li>號碼 ${num} 號 ➔ 【${name}】</li>`;
-        }
-        html += '</ul>';
-
-        resDiv.innerHTML = html;
+    // 判斷是否為形象組
+    if (groupName === '形象組') {
+      if (!available.includes(1)) {
+        alert('號碼 1 已經被抽取，無法指派給形象組！');
+        return;
+      }
+      pickedNumber = 1;
+    } else {
+      // 若非形象組，但號碼1還在且尚未給形象組，其他組別若隨機抽到1需要保護嗎？
+      // 此處預設普通組別隨機從當前剩餘號碼中抽取
+      const randomIndex = Math.floor(Math.random() * available.length);
+      pickedNumber = available[randomIndex];
     }
+
+    // 暫存抽籤結果
+    currentPendingDraw = {
+      groupName: groupName,
+      number: pickedNumber
+    };
+
+    // 顯示抽籤結果區域
+    document.getElementById('res-group-name').textContent = groupName;
+    document.getElementById('res-number').textContent = pickedNumber;
+    document.getElementById('result-box').style.display = 'block';
+    document.getElementById('draw-form').style.display = 'none';
+  }
+
+  function confirmResult() {
+    if (!currentPendingDraw) return;
+
+    let { history, available } = getStoredData();
+
+    history.push(currentPendingDraw);
+    available = available.filter(num => num !== currentPendingDraw.number);
+
+    saveData(history, available);
+
+    // 清空與重置介面
+    currentPendingDraw = null;
+    document.getElementById('group-name').value = '';
+    document.getElementById('result-box').style.display = 'none';
+    document.getElementById('draw-form').style.display = 'flex';
+
+    render();
+  }
+
+  function resetAll() {
+    if (confirm('確定要清除所有已抽籤的紀錄並重新開始嗎？')) {
+      localStorage.removeItem('draw_history');
+      localStorage.removeItem('draw_available');
+      document.getElementById('result-box').style.display = 'none';
+      document.getElementById('draw-form').style.display = 'flex';
+      document.getElementById('group-name').value = '';
+      render();
+    }
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/[&<>"']/g, function(m) {
+      return {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[m];
+    });
+  }
+
+  // 初次載入渲染
+  render();
 </script>
 
 </body>
 </html>
+
 
 
