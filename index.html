@@ -29,7 +29,7 @@
             box-sizing: border-box;
             width: 100%;
         }
-        input { border: 1px solid #000000; background: #ffffff; }
+        input { border: 1px solid #000000; background: #ffffff; color: #000000; }
         button { 
             background: #000000; 
             color: #ffffff; 
@@ -48,7 +48,7 @@
             display: none; 
         }
         ul { list-style: none; padding-left: 0; margin: 0; }
-        li { padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
+        li { padding: 6px 0; border-bottom: 1px solid #f0f0f0; font-size: 16px; }
     </style>
 </head>
 <body>
@@ -65,15 +65,21 @@
 </div>
 
 <script>
-    // 使用瀏覽器內部儲存，免任何金鑰設定
     const allNumbers = Array.from({length: 19}, (_, i) => i + 1);
 
+    // 取得歷史紀錄
     function getHistory() {
-        return JSON.parse(localStorage.getItem('draw_data') || '{}');
+        try {
+            return JSON.parse(localStorage.getItem('draw_history_data') || '{}');
+        } catch (e) {
+            return {};
+        }
     }
 
+    // 開始抽籤
     function draw() {
-        let name = document.getElementById('groupName').value.trim();
+        let nameInput = document.getElementById('groupName');
+        let name = nameInput.value.trim();
         let resDiv = document.getElementById('result');
         document.getElementById('allResults').style.display = 'none';
 
@@ -84,8 +90,9 @@
 
         let history = getHistory();
 
+        // 檢查是否已經抽過
         if (history[name]) {
-            resDiv.innerHTML = `【${name}】先前已抽過，號碼為：${history[name]}`;
+            resDiv.innerHTML = `【${name}】先前已抽過，號碼為：${history[name]} 號`;
             return;
         }
 
@@ -99,23 +106,36 @@
 
         let num;
 
-        // 特殊規則：名稱包含「形象組」即指定 1 號
+        // 規則：名稱包含「形象組」，強制指定為 1 號
         if (name.includes("形象組")) {
             if (used.includes(1)) {
-                resDiv.innerHTML = `無法抽籤：1號已被其它組別抽走`;
+                resDiv.innerHTML = `無法抽籤：1 號已被其它組別抽走`;
                 return;
             }
             num = 1;
         } else {
-            num = available[Math.floor(Math.random() * available.length)];
+            // 一般組別：從剩餘未被抽走（且非已被占用）的號碼中隨機抽取
+            // 若 1 號尚未被抽走，優先保留給形象組（一般組從 2~19 中選；若無形象組需求亦可抽）
+            let nonOneAvailable = available.filter(n => n !== 1);
+            if (nonOneAvailable.length > 0) {
+                num = nonOneAvailable[Math.floor(Math.random() * nonOneAvailable.length)];
+            } else {
+                num = available[Math.floor(Math.random() * available.length)];
+            }
         }
         
+        // 儲存紀錄
         history[name] = num;
-        localStorage.setItem('draw_data', JSON.stringify(history));
+        localStorage.setItem('draw_history_data', JSON.stringify(history));
 
-        resDiv.innerHTML = `【${name}】抽到的號碼是：【${num}】<br><small style="font-weight:normal;">剩餘號碼數：${available.length - 1} 個</small>`;
+        // 顯示結果
+        resDiv.innerHTML = `【${name}】抽到的號碼是：【${num} 號】<br><small style="font-weight:normal;">剩餘號碼數：${19 - Object.keys(history).length} 個</small>`;
+        
+        // 清空輸入框
+        nameInput.value = '';
     }
 
+    // 查看所有結果
     function showResults() {
         let resDiv = document.getElementById('allResults');
         document.getElementById('result').innerHTML = '';
@@ -128,9 +148,10 @@
             return;
         }
 
+        // 依據號碼由小到大排序
         entries.sort((a, b) => a[1] - b[1]);
 
-        let html = '<h3 style="font-size:16px; margin-top:0; border-bottom:1px solid #000; padding-bottom:5px;">所有抽籤結果：</h3><ul>';
+        let html = '<h3 style="font-size:16px; margin-top:0; border-bottom:1px solid #000; padding-bottom:5px; text-align:center;">所有抽籤結果</h3><ul>';
         for (let [name, num] of entries) {
             html += `<li>號碼 ${num} 號 ➔ 【${name}】</li>`;
         }
